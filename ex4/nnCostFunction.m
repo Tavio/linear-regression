@@ -63,11 +63,12 @@ Theta2_grad = zeros(size(Theta2));
 %
 
 X = [ones(m, 1) X];
-
+D2 = zeros(num_labels, hidden_layer_size);
 for i = 1:rows(X)
   label = zeros(num_labels, 1);
   label(y(i)) = 1;
 
+  %forward prop
   a1 = X(i, :)';
   z2 = Theta1 * a1;
   a2 = sigmoid(z2);
@@ -75,14 +76,21 @@ for i = 1:rows(X)
   z3 = Theta2 * a2;
   a3 = sigmoid(z3);
   h = a3;
-
   J += sum(-label .* log(h) - (1 - label) .* log(1 - h));
+
+  %backwards prop
+  d3 = a3 - label;
+  d2 = (Theta2(:,2:end)' * d3) .* sigmoidGradient(z2);
+
+  Theta2_grad += d3 * a2';
+  Theta1_grad += d2 * a1';
 end
 
 J /= m;
+Theta2_grad /= m;
+Theta1_grad /= m;
 
 J += (sum(sum(Theta1(:,2:end) .^ 2)) + sum(sum(Theta2(:,2:end) .^ 2))) * lambda / (2 * m);
-
 % -------------------------------------------------------------
 
 % =========================================================================
